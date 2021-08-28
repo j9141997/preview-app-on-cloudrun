@@ -1,0 +1,29 @@
+name: Preview-Deploy
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+env:
+  SERVICE: preview-${{ github.event.number }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: ["15.6.0"]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "yarn"
+
+      - name: test ${SERVICE}
+        run: echo 'hello-${SERVICE}'
