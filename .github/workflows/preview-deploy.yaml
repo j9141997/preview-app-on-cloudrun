@@ -1,9 +1,8 @@
 name: Preview-Deploy
 
 on:
-  push:
-    branches-ignore:
-      - main
+  pull_request:
+    types: [synchronize, opened, reopened, closed]
 
 env:
   SERVICE: preview-${{ github.event.number }}
@@ -25,5 +24,5 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
 
-      - name: test ${{ env.SERVICE }}
+      - name: deploy
         run: echo "hello-$SERVICE"
