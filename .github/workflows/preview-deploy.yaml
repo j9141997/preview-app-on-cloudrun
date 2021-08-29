@@ -1,4 +1,4 @@
-name: Preview-Deploy
+name: deploy
 
 on:
   pull_request:
@@ -13,7 +13,7 @@ env:
   APP_ENV: "development"
 
 jobs:
-  preview-deploy:
+  preview:
     if: github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'synchronize'
     runs-on: ubuntu-latest
 
