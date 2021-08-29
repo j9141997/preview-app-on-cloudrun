@@ -38,6 +38,7 @@ jobs:
           version: 335.0.0
           service_account_email: ${{ secrets.GCP_ACCOUNT_EMAIL }}
           service_account_key: ${{ secrets.GCP_ACCOUNT_KEY }}
+          export_default_credentials: true
 
       - run: gcloud auth configure-docker
 
