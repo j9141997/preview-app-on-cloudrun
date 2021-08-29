@@ -59,6 +59,7 @@ jobs:
           service: app-${{ env.SERVICE }}
           image: ${{ env.REGISTRY_HOSTNAME }}/${{ env.GCP_PROJECT }}/${{ env.IMAGE }}:${{ env.SERVICE }}
           region: ${{ env.GCP_REGION }}
+          tag: ${{ env.SERVICE }}
 
       - name: Use Output
         run: curl "${{ steps.deploy.outputs.url }}"
