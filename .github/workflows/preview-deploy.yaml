@@ -46,7 +46,7 @@ jobs:
           docker build \
             -f Dockerfile \
             --build-arg PREVIEW_ID=$SERVICE \
-            -t $REGISTRY_HOSTNAME/$GCP_PROJECT/$IMAGE:$SERVICE .
+            -t $REGISTRY_HOSTNAME/$GCP_PROJECT/$IMAGE/$SERVICE:$SERVICE .
 
       - name: Publish
         run: |
@@ -55,7 +55,7 @@ jobs:
       - name: Deploy to Cloud Run
         run: |
           gcloud run --quiet deploy $SERVICE \
-            --image $REGISTRY_HOSTNAME/$GCP_PROJECT/$IMAGE:$SERVICE \
+            --image $REGISTRY_HOSTNAME/$GCP_PROJECT/$IMAGE/$SERVICE:$SERVICE \
             --project $GCP_PROJECT \
             --region $GCP_REGION \
             --platform managed
@@ -87,4 +87,4 @@ jobs:
             --platform managed
 
       - name: Delete the Docker image in GCR
-        run: gcloud container images delete ${REGISTRY_HOSTNAME}/${GCP_PROJECT}/${SERVICE}
+        run: gcloud container images delete ${REGISTRY_HOSTNAME}/${GCP_PROJECT}/${IMAGE}/${SERVICE}
