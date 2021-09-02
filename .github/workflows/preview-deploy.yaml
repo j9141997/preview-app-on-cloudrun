@@ -67,11 +67,6 @@ jobs:
             --platform managed \
             --allow-unauthenticated
 
-      - name: Use Output
-        run: |
-          PREVIEW_URL=$(gcloud run services describe ${SERVICE} --format 'value(status.url)')
-          echo $PREVIEW_URL
-
   cleanup-preview:
     name: Cleanup the Preview
     if: github.event.action == 'closed'
