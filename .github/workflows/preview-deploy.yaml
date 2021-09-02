@@ -101,6 +101,6 @@ jobs:
       - name: Delete the Cloud Run Service
         run: |
           gcloud --quiet run services delete ${SERVICE} \
-            --project ${GCP_PROJECT}
+            --project ${GCP_PROJECT} \
             --region $GCP_REGION \
             --platform managed
