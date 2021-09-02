@@ -53,12 +53,12 @@ jobs:
           docker push $REGISTRY_HOSTNAME/$GCP_PROJECT/$IMAGE:$SERVICE
 
       - name: Deploy to Cloud Run
-        uses: google-github-actions/deploy-cloudrun@v0.4.0
-        with:
-          service: app-${{ env.SERVICE }}
-          image: ${{ env.REGISTRY_HOSTNAME }}/${{ env.GCP_PROJECT }}/${{ env.IMAGE }}:${{ env.SERVICE }}
-          region: ${{ env.GCP_REGION }}
-          tag: ${{ env.SERVICE }}
+        run: |
+          gcloud run deploy dev-kamui-web \
+            --image $REGISTRY_HOSTNAME/$GCP_PROJECT/$IMAGE:$SERVICE \
+            --project $GCP_PROJECT \
+            --region $GCP_REGION \
+            --platform managed
 
       - name: Use Output
         run: curl "${{ steps.deploy.outputs.url }}"
