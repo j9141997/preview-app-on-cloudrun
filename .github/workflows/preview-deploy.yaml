@@ -69,7 +69,8 @@ jobs:
 
       - name: Fetch Preview URL
         run: |
-          PREVIEW_URL=$(gcloud run services describe ${SERVICE} --format 'value(status.url)' --region ${GCP_REGION})
+          PREVIEW_URL=$(gcloud run services describe ${SERVICE} --format 'value(status.url)' --region ${GCP_REGION} --platform managed)
+          echo "PREVIEW_URL=${PREVIEWURL}" >> $GITHUB_ENV
 
       - name: Comment to GitHub
         uses: actions/github-script@v3
