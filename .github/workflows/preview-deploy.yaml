@@ -1,33 +1,28 @@
-name: deploy
+name: preview-deploy
 
 on:
   pull_request:
     types: [synchronize, opened, reopened, closed]
 
 env:
-  SERVICE: preview-${{ github.event.number }}
+  SERVICE: preview-${{ github.event.number }}-app
   REGISTRY_HOSTNAME: asia.gcr.io
   GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
   GCP_REGION: asia-northeast1
   IMAGE: app-preview
-  APP_ENV: "development"
 
 jobs:
   preview:
     if: github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'synchronize'
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: ["15.6.0"]
-
     steps:
       - uses: actions/checkout@v2
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 15.6.0
         uses: actions/setup-node@v2
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 15.6.0
           cache: "yarn"
 
       - name: install deps
@@ -35,9 +30,6 @@ jobs:
 
       - name: build
         run: yarn build
-
-      - name: print PR number
-        run: echo "hello-$SERVICE"
 
       - uses: google-github-actions/setup-gcloud@master
         with:
@@ -51,17 +43,16 @@ jobs:
         run: |
           docker build \
             -f Dockerfile \
-            --build-arg PREVIEW_ID=$SERVICE \
-            -t $REGISTRY_HOSTNAME/$GCP_PROJECT/$IMAGE/$SERVICE:$SERVICE .
+            -t $REGISTRY_HOSTNAME/$GCP_PROJECT/$IMAGE/$SERVICE:latest .
 
       - name: Publish
         run: |
-          docker push $REGISTRY_HOSTNAME/$GCP_PROJECT/$IMAGE/$SERVICE:$SERVICE
+          docker push $REGISTRY_HOSTNAME/$GCP_PROJECT/$IMAGE/$SERVICE:latest
 
       - name: Deploy to Cloud Run
         run: |
           gcloud run --quiet deploy $SERVICE \
-            --image $REGISTRY_HOSTNAME/$GCP_PROJECT/$IMAGE/$SERVICE:$SERVICE \
+            --image $REGISTRY_HOSTNAME/$GCP_PROJECT/$IMAGE/$SERVICE:latest \
             --project $GCP_PROJECT \
             --region $GCP_REGION \
             --platform managed \
@@ -76,13 +67,13 @@ jobs:
         uses: actions/github-script@v3
         with:
           script: |
-            const { issue: { number: issue_number }, repo: { owner, repo }, runId  } = context;
+            const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
             github.issues.createComment({
               issue_number,
               owner,
               repo,
               body: `Preview environment was deployed!
-                ${{ env.PREVIEW_URL }}`
+                [${{ env.PREVIEW_URL }}](${{ env.PREVIEW_URL }}){:target="_blank"}`
             });
 
   cleanup-preview:
