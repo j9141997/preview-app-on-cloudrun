@@ -58,7 +58,7 @@ jobs:
             --image $REGISTRY_HOSTNAME/$GCP_PROJECT/$IMAGE/$SERVICE:$SERVICE \
             --project $GCP_PROJECT \
             --region $GCP_REGION \
-            --platform managed
+            --platform managed \
             --allow-unauthenticated
 
       - name: Use Output
