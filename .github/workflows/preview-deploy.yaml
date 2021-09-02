@@ -38,7 +38,6 @@ jobs:
           version: 335.0.0
           service_account_email: ${{ secrets.GCP_ACCOUNT_EMAIL }}
           service_account_key: ${{ secrets.GCP_ACCOUNT_KEY }}
-          export_default_credentials: true
 
       - run: gcloud auth configure-docker
 
@@ -63,3 +62,32 @@ jobs:
 
       - name: Use Output
         run: curl "${{ steps.deploy.outputs.url }}"
+
+  cleanup-preview:
+    name: Cleanup the Preview
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/setup-gcloud@master
+        with:
+          version: 335.0.0
+          service_account_email: ${{ secrets.GCP_ACCOUNT_EMAIL }}
+          service_account_key: ${{ secrets.GCP_ACCOUNT_KEY }}
+
+      - run: gcloud auth configure-docker
+
+      - run: |
+          gcloud config set project ${PROJECT}
+          gcloud config set run/platform managed
+          gcloud config set run/region ${REGION}
+          gcloud auth configure-docker
+
+      - name: Delete the Cloud Run Service
+        run: |
+          gcloud --quiet run services delete ${SERVICE} \
+            --project ${GCP_PROJECT}
+            --region $GCP_REGION \
+            --platform managed
+
+      - name: Delete the Docker image in GCR
+        run: gcloud container images delete ${REGISTRY_HOSTNAME}/${GCP_PROJECT}/${SERVICE}
