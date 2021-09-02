@@ -67,10 +67,28 @@ jobs:
             --platform managed \
             --allow-unauthenticated
 
+      - name: Fetch Preview URL
+        run: |
+          PREVIEW_URL=$(gcloud run services describe ${SERVICE} --format 'value(status.url)' --project $GCP_PROJECT --region ${GCP_REGION}  --platform managed)
+          echo "PREVIEW_URL=${PREVIEW_URL}" >> $GITHUB_ENV
+
+      - name: Comment to GitHub
+        uses: actions/github-script@v3
+        with:
+          script: |
+            const { issue: { number: issue_number }, repo: { owner, repo }, runId  } = context;
+            github.issues.createComment({
+              issue_number,
+              owner,
+              repo,
+              body: `Preview environment was deployed!
+                ${{ env.PREVIEW_URL }}`
+            });
+
   cleanup-preview:
-    name: Cleanup the Preview
     if: github.event.action == 'closed'
     runs-on: ubuntu-latest
+
     steps:
       - uses: google-github-actions/setup-gcloud@master
         with:
@@ -86,6 +104,3 @@ jobs:
             --project ${GCP_PROJECT}
             --region $GCP_REGION \
             --platform managed
-
-      - name: Delete the Docker image in GCR
-        run: gcloud container images delete ${REGISTRY_HOSTNAME}/${GCP_PROJECT}/${IMAGE}/${SERVICE}
