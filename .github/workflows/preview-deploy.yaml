@@ -1,0 +1,96 @@
+name: deploy
+
+on:
+  pull_request:
+    types: [synchronize, opened, reopened, closed]
+
+env:
+  SERVICE: preview-${{ github.event.number }}
+  REGISTRY_HOSTNAME: asia.gcr.io
+  GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
+  GCP_REGION: asia-northeast1
+  IMAGE: app-preview
+  APP_ENV: "development"
+
+jobs:
+  preview:
+    if: github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'synchronize'
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: ["15.6.0"]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "yarn"
+
+      - name: install deps
+        run: yarn --frozen-lockfile
+
+      - name: build
+        run: yarn build
+
+      - name: print PR number
+        run: echo "hello-$SERVICE"
+
+      - uses: google-github-actions/setup-gcloud@master
+        with:
+          version: 335.0.0
+          service_account_email: ${{ secrets.GCP_ACCOUNT_EMAIL }}
+          service_account_key: ${{ secrets.GCP_ACCOUNT_KEY }}
+
+      - run: gcloud auth configure-docker
+
+      - name: Docker Build
+        run: |
+          docker build \
+            -f Dockerfile \
+            --build-arg PREVIEW_ID=$SERVICE \
+            -t $REGISTRY_HOSTNAME/$GCP_PROJECT/$IMAGE/$SERVICE:$SERVICE .
+
+      - name: Publish
+        run: |
+          docker push $REGISTRY_HOSTNAME/$GCP_PROJECT/$IMAGE/$SERVICE:$SERVICE
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run --quiet deploy $SERVICE \
+            --image $REGISTRY_HOSTNAME/$GCP_PROJECT/$IMAGE/$SERVICE:$SERVICE \
+            --project $GCP_PROJECT \
+            --region $GCP_REGION \
+            --platform managed \
+            --allow-unauthenticated
+
+      - name: Use Output
+        run: |
+          PREVIEW_URL=$(gcloud run services describe ${SERVICE} --format 'value(status.url)')
+          echo $PREVIEW_URL
+
+  cleanup-preview:
+    name: Cleanup the Preview
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/setup-gcloud@master
+        with:
+          version: 335.0.0
+          service_account_email: ${{ secrets.GCP_ACCOUNT_EMAIL }}
+          service_account_key: ${{ secrets.GCP_ACCOUNT_KEY }}
+
+      - run: gcloud auth configure-docker
+
+      - name: Delete the Cloud Run Service
+        run: |
+          gcloud --quiet run services delete ${SERVICE} \
+            --project ${GCP_PROJECT}
+            --region $GCP_REGION \
+            --platform managed
+
+      - name: Delete the Docker image in GCR
+        run: gcloud container images delete ${REGISTRY_HOSTNAME}/${GCP_PROJECT}/${IMAGE}/${SERVICE}
