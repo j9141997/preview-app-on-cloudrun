@@ -68,7 +68,7 @@ jobs:
             --allow-unauthenticated
 
       - name: Fetch Preview URL
-      - run: |
+        run: |
           PREVIEW_URL=$(gcloud run services describe ${SERVICE} --format 'value(status.url)' --region ${GCP_REGION})
           echo "PREVIEW_URL=${PREVIEWURL}" >> $GITHUB_ENV
 
