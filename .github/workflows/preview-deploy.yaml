@@ -67,10 +67,23 @@ jobs:
             --platform managed \
             --allow-unauthenticated
 
+      - name: Comment to GitHub
+        uses: actions/github-script@v3
+        with:
+          script: |
+            const { issue: { number: issue_number }, repo: { owner, repo }, runId  } = context;
+            github.issues.createComment({
+              issue_number,
+              owner,
+              repo,
+              body: `Preview environment was deployed!
+                **Strapi**:https://${{ github.event.number }}-<Cloud RunのID>-an.a.run.app`
+            });
+
   cleanup-preview:
-    name: Cleanup the Preview
     if: github.event.action == 'closed'
     runs-on: ubuntu-latest
+
     steps:
       - uses: google-github-actions/setup-gcloud@master
         with:
@@ -86,6 +99,3 @@ jobs:
             --project ${GCP_PROJECT}
             --region $GCP_REGION \
             --platform managed
-
-      - name: Delete the Docker image in GCR
-        run: gcloud container images delete ${REGISTRY_HOSTNAME}/${GCP_PROJECT}/${IMAGE}/${SERVICE}
