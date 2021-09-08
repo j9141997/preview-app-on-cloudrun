@@ -25,6 +25,7 @@ jobs:
         uses: chrnorm/deployment-status@releases/v1
         with:
           token: "${{ github.token }}"
-          state: "failure"
+          state: "error"
           description: "Failure deploy"
           deployment_id: ${{ steps.deployment.outputs.deployment_id }}
+          target_url: "example.com"
