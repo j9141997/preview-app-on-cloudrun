@@ -14,7 +14,7 @@ jobs:
 
       - name: Create GitHub Deployments
         uses: chrnorm/deployment-action@releases/v1
-        id: deployment-4
+        id: deployment4
         with:
           token: "${{ github.token }}"
           environment: "development"
