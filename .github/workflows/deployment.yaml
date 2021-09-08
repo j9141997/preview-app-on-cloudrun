@@ -12,20 +12,27 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Create GitHub Deployment
+      - name: Create GitHub Deployments
         uses: chrnorm/deployment-action@releases/v1
         id: deployment
         with:
           token: "${{ github.token }}"
           environment: "development"
 
-      - run: exit 1
-
-      - if: failure()
+      - name: Update Github Deployments Status
         uses: chrnorm/deployment-status@releases/v1
         with:
           token: "${{ github.token }}"
-          state: "error"
+          state: "success"
           description: "Failure deploy"
           deployment_id: ${{ steps.deployment.outputs.deployment_id }}
           target_url: "example.com"
+
+      # - if: failure()
+      #   uses: chrnorm/deployment-status@releases/v1
+      #   with:
+      #     token: "${{ github.token }}"
+      #     state: "error"
+      #     description: "Failure deploy"
+      #     deployment_id: ${{ steps.deployment.outputs.deployment_id }}
+      #     target_url: "example.com"
