@@ -18,7 +18,7 @@ jobs:
         with:
           token: "${{ github.token }}"
           environment: "development"
-          ref: "main"
+          ref: "${{ github.sha }}"
 
       - name: Update Github Deployments Status To Success
         uses: chrnorm/deployment-status@releases/v1
