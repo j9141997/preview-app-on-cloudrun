@@ -1,0 +1,39 @@
+name: deployment
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  run-github-deployment:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Create GitHub Deployments
+        uses: chrnorm/deployment-action@releases/v1
+        id: deployment
+        with:
+          token: "${{ github.token }}"
+          environment: "development"
+          ref: "${{ github.sha }}"
+
+      - name: Update Github Deployments Status To Success
+        uses: chrnorm/deployment-status@releases/v1
+        with:
+          token: "${{ github.token }}"
+          state: "inactive"
+          deployment_id: ${{ steps.deployment.outputs.deployment_id }}
+          description: "Success Deploy"
+          target_url: "https://example.com/"
+          environment_url: "https://example.com/1"
+
+      - if: failure()
+        name: Update Github Deployments Status To Error
+        uses: chrnorm/deployment-status@releases/v1
+        with:
+          token: "${{ github.token }}"
+          state: "error"
+          deployment_id: ${{ steps.deployment.outputs.deployment_id }}
