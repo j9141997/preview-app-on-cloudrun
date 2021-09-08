@@ -13,10 +13,11 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Create GitHub Deployments
-        uses: chrnorm/deployment-status@releases/v1
-        id: deployment2
+        uses: chrnorm/deployment-action@releases/v1
+        id: deployment
         with:
           token: "${{ github.token }}"
+          environment: "development"
 
       - name: Update Github Deployments Status To Success
         uses: chrnorm/deployment-status@releases/v1
