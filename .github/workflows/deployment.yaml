@@ -25,7 +25,9 @@ jobs:
           token: "${{ github.token }}"
           state: "success"
           deployment_id: ${{ steps.deployment.outputs.deployment_id }}
+          description: "Success Deploy"
           target_url: "https://example.com/"
+          environment_url: "https://example.com/"
 
       - if: failure()
         name: Update Github Deployments Status To Error
