@@ -12,12 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: chrnorm/deployment-status@releases/v1
-        name: Create GitHub Deployments
-        id: deployment
+      - name: Create GitHub Deployments
+        uses: chrnorm/deployment-status@releases/v1
+        id: deployment2
         with:
           token: "${{ github.token }}"
-          environment: "development"
 
       - name: Update Github Deployments Status To Success
         uses: chrnorm/deployment-status@releases/v1
